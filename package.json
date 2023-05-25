@@ -1,0 +1,17 @@
+{
+  "name": "@mafalda-sfu/test-reporter-json",
+  "version": "0.0.0",
+  "description": "JSON reporter for Node.js built-in test runner",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "test",
+    "reporter",
+    "json"
+  ],
+  "author": "Jesús Leganés-Combarro 'piranna' (https://piranna.github.io)",
+  "license": "ISC"
+}
