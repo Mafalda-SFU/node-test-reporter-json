@@ -13,5 +13,8 @@
     "json"
   ],
   "author": "Jesús Leganés-Combarro 'piranna' (https://piranna.github.io)",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "error-to-json": "github:piranna/error-to-json"
+  }
 }

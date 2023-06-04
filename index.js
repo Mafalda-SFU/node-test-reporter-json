@@ -1,3 +1,6 @@
+import {errToJSON} from 'error-to-json'
+
+
 export default async function*(source)
 {
   let test = {};
@@ -27,6 +30,8 @@ export default async function*(source)
       case 'test:fail':
       {
         const oldTest = Object.assign(nesting.pop(), data);
+        oldTest.details.error.cause = errToJSON(oldTest.details.error.cause);
+
         test = nesting.at(-1)
 
         let {failed} = test;
