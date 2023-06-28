@@ -30,7 +30,7 @@ export default async function*(source)
       case 'test:fail':
       {
         const oldTest = Object.assign(nesting.pop(), data);
-        oldTest.details.error.cause = errToJSON(oldTest.details.error.cause);
+        oldTest.details.error = errToJSON(oldTest.details.error);
 
         test = nesting.at(-1)
 
@@ -46,11 +46,13 @@ export default async function*(source)
         break;
 
       case 'test:diagnostic':
+      {
         let {diagnostics} = test;
         if(!diagnostics) test.diagnostics = diagnostics = [];
 
         diagnostics.push(data.message);
         break;
+      }
 
       case 'test:coverage':
       {
