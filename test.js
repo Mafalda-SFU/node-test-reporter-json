@@ -76,3 +76,7 @@ test('unknown event type', async function()
 
   await rejects(asyncGenerator.next())
 })
+
+// TODO: Node.js added new events, and test runner crashes. Run test runner with
+//       the reporter to see if it crashes and generated JSON is correct.
+test.todo('self execution')

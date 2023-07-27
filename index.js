@@ -10,6 +10,10 @@ export default async function*(source)
   for await(const {data, type} of source)
     switch(type)
     {
+      case 'test:enqueue':
+      case 'test:dequeue':
+        break;
+
       case 'test:start':
         test = data;
         nesting.push(test);
