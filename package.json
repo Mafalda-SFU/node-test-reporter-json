@@ -5,6 +5,11 @@
   "type": "module",
   "exports": "./index.js",
   "scripts": {
+    "docs": "cp README.md docs/ && jsdoc2md *.js > docs/API.md",
+    "lint": "eslint .",
+    "predocs": "mkdir -p docs/",
+    "prepare": "husky install",
+    "pretest": "npm run lint",
     "test": "node --experimental-test-coverage --test"
   },
   "keywords": [
@@ -16,5 +21,11 @@
   "license": "ISC",
   "dependencies": {
     "error-to-json": "github:piranna/error-to-json"
+  },
+  "devDependencies": {
+    "@mafalda-sfu/eslint-config": "^0.6.3",
+    "eslint": "^8.49.0",
+    "husky": "^8.0.3",
+    "jsdoc-to-markdown": "^8.0.0"
   }
 }

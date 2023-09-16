@@ -1,0 +1,64 @@
+name: CI
+# test, build documentation and publish
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  publish:
+    permissions:
+      contents: read
+      packages: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          registry-url: https://npm.pkg.github.com
+      - uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - run: npm ci --verbose
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: npm install --verbose @mafalda-sfu/test-reporter-json
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: |
+          NODE_OPTIONS='--test-reporter=spec --test-reporter-destination=stdout --test-reporter=@mafalda-sfu/test-reporter-json --test-reporter-destination=coverage.json' \
+            npm test
+      - run: npm run docs
+
+      - uses: cpina/github-action-push-to-another-repository@v1.5.1
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
+        with:
+          destination-github-username: Mafalda-SFU
+          destination-repository-name: Mafalda-SFU.github.io
+          source-directory: docs
+          target-directory: docs/${{ github.event.repository.name }}
+          user-email: bot@mafalda.io
+          user-name: Mafalda bot
+
+      - name: "Combine"
+        run: |
+          export TOTAL=$(cat coverage.json | jq .summary.totals.coveredLinePercent)
+          echo "total=$TOTAL" >> $GITHUB_ENV
+          echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
+      - name: Dynamic Badges
+        uses: Schneegans/dynamic-badges-action@v1.6.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          filename: ${{ github.event.repository.name }}.json
+          gistID: 27d772a9a3a8a945b34fd9676de40486
+          label: Coverage
+          minColorRange: 50
+          message: ${{ env.total }}%
+          maxColorRange: 90
+          namedLogo: Jest
+          valColorRange: ${{ env.total }}
