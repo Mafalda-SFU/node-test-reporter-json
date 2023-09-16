@@ -12,6 +12,7 @@ export default async function*(source)
     {
       case 'test:enqueue':
       case 'test:dequeue':
+      case 'test:watch:drained':
         break;
 
       case 'test:start':
@@ -22,6 +23,7 @@ export default async function*(source)
       case 'test:pass':
       {
         const oldTest = Object.assign(nesting.pop(), data);
+
         test = nesting.at(-1)
 
         let {passed} = test;
@@ -55,6 +57,26 @@ export default async function*(source)
         if(!diagnostics) test.diagnostics = diagnostics = [];
 
         diagnostics.push(data.message);
+        break;
+      }
+
+      case 'test:stderr':
+      {
+        let {messages} = test;
+        if(!messages) test.messages = messages = [];
+
+        messages.push(Object.assign({date: new Date, type: 'stderr'}, data));
+
+        break;
+      }
+
+      case 'test:stdout':
+      {
+        let {messages} = test;
+        if(!messages) test.messages = messages = [];
+
+        messages.push(Object.assign({date: new Date, type: 'stdout'}, data));
+
         break;
       }
 
