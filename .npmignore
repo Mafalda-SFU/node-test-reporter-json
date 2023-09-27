@@ -1,1 +1,6 @@
+.github/
+.husky/
+.vscode/
+*.tgz
+.eslintrc
 test.js
