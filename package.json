@@ -1,6 +1,6 @@
 {
   "name": "@mafalda-sfu/test-reporter-json",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "JSON reporter for Node.js built-in test runner",
   "type": "module",
   "exports": "./index.js",
