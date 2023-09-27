@@ -12,29 +12,47 @@ jobs:
     permissions:
       contents: read
       packages: read
+
     runs-on: ubuntu-latest
     steps:
+      # Checkout
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           registry-url: https://npm.pkg.github.com
       - uses: webfactory/ssh-agent@v0.7.0
+        if: ${{ secrets.SSH_PRIVATE_KEY }}
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      # Install dependencies
       - run: npm ci --verbose
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: npm install --verbose @mafalda-sfu/test-reporter-json
+      - name: Install test reporters
+        run: |
+          npm install --no-save --verbose \
+            @mafalda-sfu/test-reporter-json node-test-github-reporter
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: |
-          NODE_OPTIONS='--test-reporter=spec --test-reporter-destination=stdout --test-reporter=@mafalda-sfu/test-reporter-json --test-reporter-destination=coverage.json' \
-            npm test
-      - run: npm run docs
+      # Tests
+      - name: Run tests
+        env:
+          NODE_OPTIONS: >
+            --test-reporter=spec
+            --test-reporter-destination=stdout
+            --test-reporter=node-test-github-reporter
+            --test-reporter-destination=stderr
+            --test-reporter=@mafalda-sfu/test-reporter-json
+            --test-reporter-destination=coverage.json
+        run: npm test
 
-      - uses: cpina/github-action-push-to-another-repository@v1.5.1
+      # Docs
+      - name: Generate docs
+        run: npm run docs
+      - name: Publish docs
+        uses: cpina/github-action-push-to-another-repository@v1.5.1
         env:
           SSH_DEPLOY_KEY: ${{ secrets.SSH_DEPLOY_KEY }}
         with:
@@ -45,9 +63,14 @@ jobs:
           user-email: bot@mafalda.io
           user-name: Mafalda bot
 
-      - name: "Combine"
+      # Coverage
+      - name: Export total coverage
         run: |
-          export TOTAL=$(cat coverage.json | jq .summary.totals.coveredLinePercent)
+          export TOTAL=$( \
+            cat coverage.json | \
+            jq .summary.totals.coveredLinePercent | \
+            jq '.*100|round/100' \
+          )
           echo "total=$TOTAL" >> $GITHUB_ENV
           echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
       - name: Dynamic Badges
