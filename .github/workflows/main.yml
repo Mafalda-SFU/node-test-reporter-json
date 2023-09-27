@@ -22,7 +22,6 @@ jobs:
           node-version: latest
           registry-url: https://npm.pkg.github.com
       - uses: webfactory/ssh-agent@v0.7.0
-        if: ${{ secrets.SSH_PRIVATE_KEY }}
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
