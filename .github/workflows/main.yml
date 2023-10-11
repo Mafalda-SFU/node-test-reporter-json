@@ -36,8 +36,9 @@ jobs:
 
       # Tests
       - name: Run tests
-        run: NODE_OPTIONS='--test-reporter=spec --test-reporter-destination=stdout --test-reporter=node-test-github-reporter --test-reporter-destination=stderr --test-reporter=@mafalda-sfu/test-reporter-json --test-reporter-destination=coverage.json' npm test
-      - run: test -f coverage.json # Ensure coverage.json has been created
+        run: |
+          NODE_OPTIONS='--test-reporter=spec --test-reporter-destination=stdout --test-reporter=node-test-github-reporter --test-reporter-destination=stderr --test-reporter=@mafalda-sfu/test-reporter-json --test-reporter-destination=coverage.json' npm test
+          test -f coverage.json # Ensure coverage.json has been created
 
       # Docs
       - name: Generate docs
@@ -54,25 +55,45 @@ jobs:
           user-email: bot@mafalda.io
           user-name: Mafalda bot
 
-      # Coverage
-      - name: Export total coverage
+      # Code coverage
+      - name: Code coverage
         run: |
-          export TOTAL=$( \
+          export CODE_COVERAGE=$( \
             cat coverage.json | \
             jq .summary.totals.coveredLinePercent | \
             jq '.*100|round/100' \
           )
-          echo "total=$TOTAL" >> $GITHUB_ENV
-          echo "### Total coverage: ${TOTAL}%" >> $GITHUB_STEP_SUMMARY
-      - name: Dynamic Badges
+          echo "codeCoverage=$CODE_COVERAGE" >> $GITHUB_ENV
+          echo "### Code coverage: ${CODE_COVERAGE}%" >> $GITHUB_STEP_SUMMARY
+      - name: Code coverage badge
         uses: Schneegans/dynamic-badges-action@v1.6.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           filename: ${{ github.event.repository.name }}.json
           gistID: 27d772a9a3a8a945b34fd9676de40486
-          label: Coverage
+          label: Code coverage
           minColorRange: 50
-          message: ${{ env.total }}%
+          message: ${{ env.codeCoverage }}%
           maxColorRange: 90
           namedLogo: Jest
-          valColorRange: ${{ env.total }}
+          valColorRange: ${{ env.codeCoverage }}
+
+      # Docs coverage
+      - run: npm run docs:coverage
+      - name: Docs coverage
+        run: |
+          export DOCS_COVERAGE=$(cat doc-coverage/docCoverageReport.json | jq .jsdocCoverage.coveragePercent)
+          echo "docsCoverage=$DOCS_COVERAGE" >> $GITHUB_ENV
+          echo "### Docs coverage: ${DOCS_COVERAGE}%" >> $GITHUB_STEP_SUMMARY
+      - name: Docs coverage badge
+        uses: Schneegans/dynamic-badges-action@v1.6.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          filename: ${{ github.event.repository.name }}.json
+          gistID: 7238ab5f664c36d1edfa48d218eea9b3
+          label: Docs coverage
+          minColorRange: 50
+          message: ${{ env.docsCoverage }}%
+          maxColorRange: 90
+          namedLogo: readdotcv
+          valColorRange: ${{ env.docsCoverage }}

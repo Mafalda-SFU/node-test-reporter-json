@@ -6,6 +6,7 @@
   "exports": "./index.js",
   "scripts": {
     "docs": "cp README.md docs/ && jsdoc2md *.js > docs/API.md",
+    "docs:coverage": "doc-coverage .",
     "lint": "eslint .",
     "predocs": "mkdir -p docs/",
     "prepare": "husky install",
@@ -23,6 +24,7 @@
     "error-to-json": "github:piranna/error-to-json"
   },
   "devDependencies": {
+    "@mafalda-sfu/doc-coverage": "github:Mafalda-SFU/doc-coverage",
     "@mafalda-sfu/eslint-config": "^0.6.3",
     "eslint": "^8.51.0",
     "husky": "^8.0.3",
