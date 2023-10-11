@@ -1,0 +1,83 @@
+name: Dependabot
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+          registry-url: https://npm.pkg.github.com
+      - uses: webfactory/ssh-agent@v0.7.0
+        if: ${{ secrets.SSH_PRIVATE_KEY }}
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Install dependencies
+      - run: npm ci --verbose
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Update all dependencies, in addition to the ones already updated by
+      # Dependabot
+      - name: Update dependencies
+        run: |
+          npx npm-check-updates -u
+          npm install --verbose
+
+      # Run tests
+      # TODO: enable status checks and branch protection, and remove tests since
+      #       they are already run in the `main.yml` workflow
+      - run: npm test
+
+      # Commit and push changes
+      - name: Commit and push changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git add .
+          git commit -m "chore(deps): update dependencies"
+
+      # Create new release when updating Mediasoup dependency and merge PR
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create a new release matching the latest Node.js version
+        if: ${{contains(steps.metadata.outputs.dependency-names, 'mediasoup')}}
+        # TODO: check explicitly if version of `mediasoup` dependency is
+        #       different of package version instead of rely on Dependabot one,
+        #       since it could have been updated by npm-check-updates
+        run: |
+          version=`jq -r '.dependencies.mediasoup' package.json`
+
+          npm version ${version#"^"}
+
+      # Push changes, new version tag, and merge PR
+      - name: Push changes and tags
+        run: |
+          git push
+          git push --tags
+
+      - name: Enable auto-merge for Dependabot PRs that updated Mediasoup
+        # TODO: enable status checks and branch protection, and remove tests
+        #       since they are already run in the `main.yml` workflow
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
