@@ -30,9 +30,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Install test reporters
-        run: |
-          npm install --no-save --verbose \
-            @mafalda-sfu/test-reporter-json node-test-github-reporter
+        run: npm install --no-save --verbose node-test-github-reporter
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
