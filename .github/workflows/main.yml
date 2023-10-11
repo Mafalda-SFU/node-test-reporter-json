@@ -36,15 +36,8 @@ jobs:
 
       # Tests
       - name: Run tests
-        env:
-          NODE_OPTIONS: >
-            --test-reporter=spec
-            --test-reporter-destination=stdout
-            --test-reporter=node-test-github-reporter
-            --test-reporter-destination=stderr
-            --test-reporter=@mafalda-sfu/test-reporter-json
-            --test-reporter-destination=coverage.json
-        run: npm test
+        run: NODE_OPTIONS='--test-reporter=spec --test-reporter-destination=stdout --test-reporter=node-test-github-reporter --test-reporter-destination=stderr --test-reporter=@mafalda-sfu/test-reporter-json --test-reporter-destination=coverage.json' npm test
+      - run: test -f coverage.json # Ensure coverage.json has been created
 
       # Docs
       - name: Generate docs
